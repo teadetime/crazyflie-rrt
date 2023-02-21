@@ -1,5 +1,6 @@
 from .occupany_grid import OccupanyGrid3d
 import numpy as np
+import networkx as nx
 
 class CrazyflieRRT:
     # Do we want to store points here as just np points, or use NetworkX?
@@ -13,10 +14,11 @@ class CrazyflieRRT:
         pass
 
     def step():
-        # 1. Sample a random point from the configuration space
-        # 2. Take a 1 step_size step towards the random point
-        # 3. Check if that step will encounter a collision. If yes, try again. If not, continue
-        # 4. Add the node to the tree. 
+        # 1. Sample a random point from the configuration space (Start with 2D and then 3D position space)
+        # 2. Find the point in existing graph closest to the random point
+        # 3. Take a 1 step_size step towards the random point from the chosen closest point
+        # 4. Check if that step will encounter a collision. If yes, skip to the next loop
+        # 5. Add the node to the tree. 
         pass
 
     def get_final_traj():
