@@ -1,22 +1,28 @@
 import numpy as np
 import sys
 
-from occupany_grid import Point2d, OccupanyGrid2d
-
+from occupany_grid import OccupanyGrid3d, Point3d
+from viz import viz_world
 
 if __name__ == "__main__":
     # The Robosys Environment
-    origin = Point2d(
-        200, 100
+    origin = Point3d(
+        200, 100, 0
     )  # Bottom Left corner of grid is 2 meters to the left (x) and 1m negative y
     grid_width = 100  # 5 meters wide (x)
-    grid_height = 60  # 3 meters tall (y)
-    robosys_grid = OccupanyGrid2d(grid_width, grid_height, origin, cell_size=5)
+    grid_depth = 60  # 3 meters tall (y)
+    grid_height = 40  # 2 meters tall (z)
+    robosys_grid = OccupanyGrid3d(
+        grid_width, grid_depth, grid_height, origin, cell_size=5
+    )
     robosys_grid.add_rectangles(
-        Point2d(0, 20), Point2d(200, 40)
+        Point3d(0, 20, 0), Point3d(60, 40, 5)
     )  # Measurements in CM relative to origin
-    robosys_grid.add_rectangles(Point2d(-30, -60), Point2d(170, -20))
+    robosys_grid.add_rectangles(Point3d(-30, -60, 0), Point3d(190, -20, 34))
 
-    # COnfirmed that Objects have been added!
-    np.set_printoptions(threshold=sys.maxsize)
-    print(robosys_grid.map)
+    world = viz_world(robosys_grid)
+
+    world.add_omap_to_fig()
+    world.add_edge(Point3d(0, 0, 0), Point3d(30, 10, 60), end_name="Some point")
+    world.add_point(Point3d(0, 0, 0), "Origin", True, "red")
+    world.show_figure()

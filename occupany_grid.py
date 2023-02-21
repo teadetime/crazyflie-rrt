@@ -2,8 +2,6 @@
 
 
 from collections import namedtuple
-import math
-import sys
 from typing import Sequence
 import numpy as np
 
@@ -113,41 +111,45 @@ class OccupanyGrid3d:
         self.origin = origin  # in CM not in cells
 
         self.cell_size = cell_size
-
-        # map_width_cells = 1 + math.ceil((upper_right.x-cell_size)/self.cell_size) + math.ceil((bottom_left.x+cell_size)/self.cell_size)
-        # map_height_cells = 1 + math.ceil((upper_right.y-cell_size)/self.cell_size)
         self.map = np.zeros((grid_width, grid_depth, grid_height), dtype=bool)
 
     @staticmethod
-    def glbl_pt_to_cell(
-        origin: Point3d, cell_size: float, point: Point3d
-    ) -> tuple[int, int, int]:
-        return (
-            math.floor((point.x + origin.x) / cell_size),
-            math.floor((point.y + origin.y) / cell_size),
-            math.floor((point.z + origin.z) / cell_size),
-        )
-
-    def add_points_global(self, points: Sequence[namedtuple]):
-        """Add points in the global frame (relative to origin) to the occupancy_grid."""
-        # TODO: Raise error on too big of query
-        cells = OccupanyGrid3d.glbl_pt_to_cell(self.origin, self.cell_size, points)
-        transposed = cells.transpose()
-        self.map[(transposed[0], transposed[1], transposed[2])] = True
-
-    def get_points_global(self, points: np.ndarray):
-        """Take Points in the global Mpa frame and return if they are occupied"""
-        cells = OccupanyGrid3d.glbl_pt_to_cell(self.origin, self.cell_size, points)
-        transposed = cells.transpose()
-        return self.map[(transposed[0], transposed[1], transposed[2])]
+    def cells_to_glbl_pts(cells: np.array, cell_size: float, origin: Point3d):
+        """Takes a 3 by X array of cell indicies."""
+        return (cells * cell_size - origin).transpose()
 
     @staticmethod
-    def glbl_pt_to_cell(
+    def glbl_pts_to_cells(
         origin: Point3d, cell_size: float, points: np.ndarray
     ) -> np.ndarray:
         transformed = points + np.array(origin)
         scaled = np.floor(transformed / cell_size).astype("int")
         return scaled
+
+    @property
+    def min_max(self):
+        return (
+            -np.array(self.origin),
+            np.array(self.map.shape) * self.cell_size - self.origin,
+        )
+
+    def obstacles_in_global(self) -> np.array:
+        """Return Obstacle map in Global Coordinates (cms)"""
+        obstacles = np.array(self.map.nonzero()).transpose()
+        return OccupanyGrid3d.cells_to_glbl_pts(obstacles, self.cell_size, self.origin)
+
+    def add_points_global(self, points: Sequence[namedtuple]):
+        """Add points in the global frame (relative to origin) to the occupancy_grid."""
+        # TODO: Raise error on too big of query
+        cells = OccupanyGrid3d.glbl_pts_to_cells(self.origin, self.cell_size, points)
+        transposed = cells.transpose()
+        self.map[(transposed[0], transposed[1], transposed[2])] = True
+
+    def get_points_global(self, points: np.ndarray):
+        """Take Points in the global Mpa frame and return if they are occupied"""
+        cells = OccupanyGrid3d.glbl_pts_to_cells(self.origin, self.cell_size, points)
+        transposed = cells.transpose()
+        return self.map[(transposed[0], transposed[1], transposed[2])]
 
     def get_points_rel(pose: Pose2d, points: Sequence[namedtuple]):
         # TODO: Matrix multiplication for rotation and transformation and then query points
@@ -162,10 +164,10 @@ class OccupanyGrid3d:
         # TODO: Refactor to use linspace to then use numpy indexing
         # self.map[(range(bottom_left_cell[0], top_right_cell[0] + 1), range(bottom_left_cell[1], top_right_cell[1] + 1), range(bottom_left_cell[2], top_right_cell[2] + 1))]
 
-        bottom_left_cell = OccupanyGrid3d.glbl_pt_to_cell(
+        bottom_left_cell = OccupanyGrid3d.glbl_pts_to_cells(
             self.origin, self.cell_size, bottom_left_point
         )
-        top_right_cell = OccupanyGrid3d.glbl_pt_to_cell(
+        top_right_cell = OccupanyGrid3d.glbl_pts_to_cells(
             self.origin, self.cell_size, top_right_point
         )
         xs = range(bottom_left_cell[0], top_right_cell[0] + 1)
@@ -175,7 +177,7 @@ class OccupanyGrid3d:
         for x in xs:
             for y in ys:
                 for z in zs:
-                    self.map[(x,y,z)] = True
+                    self.map[(x, y, z)] = True
 
     def check_line(
         self, start_pt: Point3d, end_pt: Point3d, bounding_box: list[Point3d]

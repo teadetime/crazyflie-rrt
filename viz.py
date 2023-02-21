@@ -1,114 +1,106 @@
 """Simulator/Visualizer for outputs of RRT algorithm"""
-
-from tkinter import Text
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
 import plotly.graph_objects as go
 
 from occupany_grid import OccupanyGrid3d, Point3d
 
 
-class viz_world():
+class viz_world:
     def __init__(self, omap: OccupanyGrid3d):
         self.omap = omap
+        self.fig = go.Figure()
 
+    def add_omap_to_fig(self):
+        obstacles = self.omap.obstacles_in_global()
+        omap_plot = go.Scatter3d(
+            x=obstacles[0],
+            y=obstacles[1],
+            z=obstacles[2],
+            opacity=1,
+            mode="markers",
+            marker=dict(
+                size=5,
+                symbol="square",  # ['circle', 'circle-open', 'cross', 'diamond','diamond-open', 'square', 'square-open', 'x']
+                # color=plots[0],                # set color to an array/list of desired values
+                # colorscale='Viridis',   # choose a colorscale
+                opacity=0.25,
+            ),
+            name="Obstacle Map",
+        )
+        self.fig.add_trace(omap_plot)
 
-if __name__ == "__main__":
-    # The Robosys Environment
-    origin = Point3d(
-        200, 100, 0
-    )  # Bottom Left corner of grid is 2 meters to the left (x) and 1m negative y
-    grid_width = 100  # 5 meters wide (x)
-    grid_depth = 60  # 3 meters tall (y)
-    grid_height = 40  # 2 meters tall (z)
-    robosys_grid = OccupanyGrid3d(
-        grid_width, grid_depth, grid_height, origin, cell_size=5
-    )
-    robosys_grid.add_rectangles(
-        Point3d(0, 20, 0), Point3d(200, 40, 60)
-    )  # Measurements in CM relative to origin
-    robosys_grid.add_rectangles(Point3d(-30,-60,0), Point3d(170, -20, 40))
+    def add_point(
+        self, point: Point3d, name: str | None, show_legend=False, color="black"
+    ):
+        plotly_point = go.Scatter3d(
+            x=[point.x],
+            y=[point.y],
+            z=[point.z],
+            opacity=1,
+            mode="markers",
+            marker=dict(
+                size=5,
+                symbol="circle",  # ['circle', 'circle-open', 'cross', 'diamond','diamond-open', 'square', 'square-open', 'x']
+                color=color,
+                opacity=0.5,
+            ),
+            name=name,
+            showlegend=show_legend,
+        )
+        self.fig.add_trace(plotly_point)
 
-    axes_shape = list(robosys_grid.map.shape)
+    def add_edge(self, start: Point3d, end: Point3d, start_name=None, end_name=None):
+        plotly_edge = go.Scatter3d(
+            x=[start.x, end.x],
+            y=[start.y, end.y],
+            z=[start.z, end.z],
+            marker=dict(
+                size=3,
+                symbol="circle",  # ['circle', 'circle-open', 'cross', 'diamond','diamond-open', 'square', 'square-open', 'x']
+                color="black",
+                opacity=0.5,
+            ),
+            mode="markers+text+lines",
+            text=[start_name, end_name],
+            textposition="top center",
+            line=dict(
+                color="black",
+                width=3,
+            ),
+            showlegend=False,
+        )
+        self.fig.add_trace(plotly_edge)
 
-    # Create Data
-    data = robosys_grid.map
-
-    # Convert Plot coorinates to world coordinates
-    plots = np.array(data.nonzero()).transpose()
-    adj = (plots*robosys_grid.cell_size - robosys_grid.origin).transpose()
-
-    # Get max 
-    min = -np.array(robosys_grid.origin)
-    max = np.array(robosys_grid.map.shape) * robosys_grid.cell_size - robosys_grid.origin
-
-    fig = go.Figure(
-        data=[
-            go.Scatter3d(
-                x=adj[0],
-                y=adj[1],
-                z=adj[2],
-                opacity=1,
-                mode="markers",
-                marker=dict(
-                    size=5,
-                    symbol="square",  # ['circle', 'circle-open', 'cross', 'diamond','diamond-open', 'square', 'square-open', 'x']
-                    # color=plots[0],                # set color to an array/list of desired values
-                    # colorscale='Viridis',   # choose a colorscale
-                    opacity=0.25,
+    def update_figure(self):
+        min, max = self.omap.min_max
+        self.fig.update_layout(
+            scene=dict(
+                camera=dict(
+                    eye=dict(x=0.0, y=-0.01, z=10000)
+                ),  # Weirdly tuned for aspect ration, should consider a param of the omap
+                xaxis=dict(
+                    nticks=self.omap.map.shape[0],
+                    range=[min[0], max[0]],
                 ),
-                name="Obstacle Map"
-            ),
-            go.Scatter3d(
-                x=[0.],
-                y=[0.],
-                z=[0.],
-                opacity=1,
-                mode="markers",
-                marker=dict(
-                    size=5,
-                    symbol="circle",  # ['circle', 'circle-open', 'cross', 'diamond','diamond-open', 'square', 'square-open', 'x']
-                    color='black',                # set color to an array/list of desired values
-                    # colorscale='Viridis',   # choose a colorscale
+                yaxis=dict(
+                    nticks=self.omap.map.shape[1],
+                    range=[min[1], max[1]],
                 ),
-                name="Origin"
-            ),
-                        go.Scatter3d(
-                x=[0.],
-                y=[0.],
-                z=[0.],
-                opacity=1,
-                mode="markers+text",
-                text=["Origin"],
-                textposition="top center",
-                marker=dict(
-                    size=5,
-                    symbol="circle",  # ['circle', 'circle-open', 'cross', 'diamond','diamond-open', 'square', 'square-open', 'x']
-                    color='black',                # set color to an array/list of desired values
-                    # colorscale='Viridis',   # choose a colorscale
+                zaxis=dict(
+                    nticks=self.omap.map.shape[2],
+                    range=[min[2], max[2]],
                 ),
-                showlegend=False
+                aspectratio=dict(
+                    x=self.omap.map.shape[0],
+                    y=self.omap.map.shape[1],
+                    z=self.omap.map.shape[2],
+                ),
             ),
-        ]
-    )
-    fig.update_layout(
-        scene=dict(
-            camera = dict(eye=dict(x=0., y=-0.01, z=1)),
-            xaxis=dict(
-                nticks=robosys_grid.map.shape[0],
-                range=[min[0], max[0]],
-            ),
-            yaxis=dict(
-                nticks=robosys_grid.map.shape[1],
-                range=[min[1], max[1]],
-            ),
-            zaxis=dict(
-                nticks=robosys_grid.map.shape[2],
-                range=[min[2], max[2]],
-            ),
-        ),
-        margin=dict(r=5, l=5, b=5, t=5),
-    )
-    fig.show()
-    # More work here: https://plotly.com/python/3d-axes/
+            margin=dict(r=5, l=5, b=5, t=5),
+        )
+
+    def show_figure(self):
+        self.update_figure()
+        self.fig.show()
+
+    def save_figure(self):
+        self.fig.write_html("plotly.html")
