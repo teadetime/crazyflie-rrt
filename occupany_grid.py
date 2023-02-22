@@ -194,6 +194,8 @@ class OccupanyGrid3d:
         end_vec = np.array(end_pt)
         length = np.linalg.norm(end_vec - start_vec)
         num_pts = int(length / (self.cell_size / 4))
+        if num_pts < 2:
+            num_pts = 2
 
         points = np.linspace(start_vec, end_vec, num=num_pts, endpoint=True)
         points_list = np.concatenate([points + np.array(c) for c in bounding_box])
