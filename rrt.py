@@ -45,6 +45,7 @@ class CrazyflieRRT:
             displacement_vector = posn_random - closest_posn
             step_vector = displacement_vector * self.step_size / np.linalg.norm(displacement_vector)
             new_posn = closest_posn + step_vector
+            new_posn = np.clip(new_posn, posn_min.reshape((3, 1)), posn_max.reshape((3, 1)))
             new_node = Point3d(*new_posn.flatten())
 
             # 4. Check if that step will encounter a collision. If yes, skip to the next loop
