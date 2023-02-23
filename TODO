@@ -1,0 +1,11 @@
+Nathan TODO
+
+Check if within distance of goal funcitonality (Should this be in obstacle map? don't think so)
+
+Project Multiranger into Omap using different Color?
+
+Plot In real time using Log data in python script?
+
+Integrate running the streamlit to running the live viz/rrt?
+
+Generate waypoints off of RRT

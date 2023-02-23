@@ -202,6 +202,25 @@ class OccupanyGrid3d:
 
         return not np.any(self.get_points_global(points_list))
 
+    def project(self, point: Point3d):
+        yaw, pitch, roll = 0,0,-30* np.pi/180
+        r_yaw = np.array([[np.cos(yaw), -np.sin(yaw), 0], 
+                            [np.sin(yaw), np.cos(yaw), 0],
+                            [0, 0, 1]])  # Rotation around z
+        r_pitch = np.array([[np.cos(pitch), 0, np.sin(pitch)], 
+                            [0, 1, 0],
+                            [-np.sin(pitch), 0, np.cos(pitch)]])# Rotation around y
+        r_roll = np.array([[1, 0, 0],
+                            [0, np.cos(roll), -np.sin(roll)], 
+                            [0, np.sin(roll), np.cos(roll)]]) # Rotation around x
+
+        R = np.matmul(r_yaw, np.matmul(r_pitch, r_roll))
+
+        pt = np.array(point)
+
+        print(f"Rotaion: {R.shape}, POint: {pt.shape}")
+        print(np.matmul(R, point))
+
 
 if __name__ == "__main__":
     omap3d = OccupanyGrid3d(4, 6, 2, Point3d(15, 10, 0), 10)
@@ -216,6 +235,7 @@ if __name__ == "__main__":
     ]
     valid_line = omap3d.check_line(Point3d(0, 0, 0), Point3d(11, 21, 0), quad_corners)
     print(valid_line)
+    omap3d.project((1,2,0))
     # Some gut checks here:
     # print(omap.map)
     # omap.add_points_global([Point2d(10,10), Point2d(0,0) ])

@@ -37,7 +37,7 @@ if __name__ == "__main__":
     with st.form("sim_params"):
         step_size = st.slider("Step size (cm)", 1, 50, 20)
         iterations = st.slider("Iterations", 10, 1000, 500)
-        use_goal = st.checkbox("Use goal", False)
+        use_goal = st.checkbox("Use goal", True)
         
         goal_posn = [150., -90., 0.]
         coord_name = ["X", "Y", "Z"]
@@ -54,7 +54,8 @@ if __name__ == "__main__":
     rrt = CrazyflieRRT(robosys_grid, step_size=step_size, goal_bias = 0.25)
 
     if use_goal:
-        rrt.generate(goal=goal_posn, max_iter=iterations)
+        output = rrt.generate(goal=goal_posn, max_iter=iterations)
+        print(output)
     else:
         rrt.generate(max_iter=iterations)
 

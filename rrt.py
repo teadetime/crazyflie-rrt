@@ -15,14 +15,15 @@ class CrazyflieRRT:
     def __init__(self, grid: OccupanyGrid3d, init_state: Point3d = Point3d(0, 0, 0), step_size = 10, goal_bias=0.25):
         # Store occupancy grid to reference dimensions of area, as well as checking for collisions!
         self.tree = nx.DiGraph()
-        self.tree.add_node(init_state, id=0)
+        self.initial_node = init_state
+        self.tree.add_node(self.initial_node, id=0)
         self.grid = grid
         self.step_size = step_size
         self.goal_bias = goal_bias
 
         self.rng = np.random.default_rng(10)
 
-    def generate(self, goal: Point3d = None, max_iter:int = 10):
+    def generate(self, goal: Point3d = None, max_iter:int = 10, goal_diameter = 10):
         for i in range(max_iter):
             # 1. Sample a random point from the configuration space (Start with 2D and then 3D position space)
             posn_min = self.grid.min_max[0]
@@ -56,6 +57,20 @@ class CrazyflieRRT:
             self.tree.add_node(new_node, id=i+1)
             self.tree.add_edges_from([(closest_node, new_node)])
 
+            # 6. Check if close enough to the goal!
+            
+            if(np.linalg.norm( np.array(goal)-np.array(new_node) ) <= goal_diameter):
+                # Calcaulate the final path
+                node = new_node                
+                node_list = [new_node]
+                while (node != self.initial_node):
+                    prev_node = list(self.tree.predecessors(node))[0]
+                    node_list.append(prev_node)
+                    node = prev_node
+                    print(node)
+                node_list.reverse()
+                return node_list
+        return False
     def get_final_traj():
         # Hypothesis: Working backwards, at each point, the preceding node should be the adjacent node with the lowest ID.
         pass
