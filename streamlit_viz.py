@@ -37,18 +37,37 @@ if __name__ == "__main__":
     with st.form("sim_params"):
         step_size = st.slider("Step size (cm)", 1, 50, 20)
         iterations = st.slider("Iterations", 10, 1000, 500)
-        st.form_submit_button("Submit")
+        use_goal = st.checkbox("Use goal", False)
+        
+        goal_posn = [150., -90., 0.]
+        coord_name = ["X", "Y", "Z"]
+        min_max = robosys_grid.min_max
+        for i, col in enumerate(st.columns(3)):
+            with col:
+                goal_posn[i] = st.number_input(coord_name[i], float(min_max[0][i]), float(min_max[1][i]), float(goal_posn[i]))
+        goal_posn = Point3d(*goal_posn)
 
-    rrt = CrazyflieRRT(robosys_grid, step_size = step_size)
-    rrt.generate(iterations)
+        goal_bias = st.slider("Goal bias", 0., 1., 0.25)
+
+        st.form_submit_button("Generate")
+
+    rrt = CrazyflieRRT(robosys_grid, step_size=step_size, goal_bias = 0.25)
+
+    if use_goal:
+        rrt.generate(goal=goal_posn, max_iter=iterations)
+    else:
+        rrt.generate(max_iter=iterations)
+
     for node in rrt.tree.nodes:
         world.add_point(Point3d(*node), rrt.tree.nodes[node]["id"])
 
     for edge in rrt.tree.edges:
         world.add_edge(edge[0], edge[1])
 
+    if use_goal:
+        world.add_point(goal_posn, "Goal", True, color="red")
+
     world.update_figure()
     
     st.title("RRT Viz")
     st.plotly_chart(world.fig)
-    # st.pyplot(nx.draw(rrt.tree, with_labels=True))
