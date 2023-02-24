@@ -1,0 +1,3 @@
+[submodule "crazyflie"]
+	path = crazyflie
+	url = git@github.com:bitcraze/crazyflie-lib-python.git
