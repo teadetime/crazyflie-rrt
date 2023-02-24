@@ -148,6 +148,7 @@ class OccupanyGrid3d:
     def get_points_global(self, points: np.ndarray):
         """Take Points in the global Mpa frame and return if they are occupied"""
         cells = OccupanyGrid3d.glbl_pts_to_cells(self.origin, self.cell_size, points)
+        cells = np.clip(cells, [0, 0, 0], np.array(self.map.shape) - 1)
         transposed = cells.transpose()
         return self.map[(transposed[0], transposed[1], transposed[2])]
 
