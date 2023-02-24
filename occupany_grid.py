@@ -2,6 +2,7 @@
 
 
 from collections import namedtuple
+from math import ceil
 from typing import Sequence
 import numpy as np
 
@@ -101,7 +102,9 @@ class OccupanyGrid3d:
             or grid_depth <= 1
             or grid_height <= 1
         ):
-            raise ValueError("Occupancy grid should be even shaped")
+            raise ValueError(
+                f"Occupancy grid should be even shaped {grid_width} {grid_depth} {grid_height}"
+            )
         if (
             origin.x >= cell_size * grid_width
             or origin.y >= cell_size * grid_depth
@@ -231,49 +234,4 @@ class OccupanyGrid3d:
 
 
 if __name__ == "__main__":
-    omap3d = OccupanyGrid3d(4, 6, 2, Point3d(15, 10, 0), 10)
-    omap3d.add_rectangles(Point3d(0, 0, 0), Point3d(10, 10, 19))
-
-    quad_corners = [
-        Point3d(0, 0, 0),
-        Point3d(5, 5, 0),
-        Point3d(-5, 5, 0),
-        Point3d(5, -5, 0),
-        Point3d(-5, -5, 0),
-    ]
-    valid_line = omap3d.check_line(Point3d(0, 0, 0), Point3d(11, 21, 0), quad_corners)
-    # print(valid_line)
-    # omap3d.project((1,2,0))
-
-    # The Robosys Environment
-    origin = Point3d(
-        200, 100, 0
-    )  # Bottom Left corner of grid is 2 meters to the left (x) and 1m negative y
-    grid_width = 100  # 5 meters wide (x)
-    grid_depth = 60  # 3 meters tall (y)
-    grid_height = 20  # 2 meters tall (z)
-    robosys_grid = OccupanyGrid3d(
-        grid_width, grid_depth, grid_height, origin, cell_size=5
-    )
-    robosys_grid.add_rectangles(
-        Point3d(0, 20, 0), Point3d(60, 40, 60)
-    )  # Measurements in CM relative to origin
-    robosys_grid.add_rectangles(Point3d(-30, -60, 0), Point3d(0, -20, 90))
-    robosys_grid.add_rectangles(Point3d(0, -60, 40), Point3d(240, -20, 90))
-    robosys_grid.add_rectangles(Point3d(60, -60, 0), Point3d(240, -20, 90))
-    valid_line = robosys_grid.check_line(
-        Point3d(0, 0, 0),
-        Point3d(x=103.00174191628984, y=-91.5617546731021, z=2.259940872447486),
-        quad_corners,
-    )
-    print(valid_line)
-
-    # Some gut checks here:
-    # print(omap.map)
-    # omap.add_points_global([Point2d(10,10), Point2d(0,0) ])
-    # print(omap.map)
-    # query = omap.get_points_global([Point2d(10,10), Point2d(0,0) ])
-    # print(query)
-
-    # omap.add_rectangles(Point2d(0,0), Point2d(10,10))
-    # print(omap.map)
+    pass
