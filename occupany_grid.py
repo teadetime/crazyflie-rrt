@@ -199,20 +199,27 @@ class OccupanyGrid3d:
 
         points = np.linspace(start_vec, end_vec, num=num_pts, endpoint=True)
         points_list = np.concatenate([points + np.array(c) for c in bounding_box])
-
         return not np.any(self.get_points_global(points_list))
 
     def project(self, point: Point3d):
-        yaw, pitch, roll = 0,0,-30* np.pi/180
-        r_yaw = np.array([[np.cos(yaw), -np.sin(yaw), 0], 
-                            [np.sin(yaw), np.cos(yaw), 0],
-                            [0, 0, 1]])  # Rotation around z
-        r_pitch = np.array([[np.cos(pitch), 0, np.sin(pitch)], 
-                            [0, 1, 0],
-                            [-np.sin(pitch), 0, np.cos(pitch)]])# Rotation around y
-        r_roll = np.array([[1, 0, 0],
-                            [0, np.cos(roll), -np.sin(roll)], 
-                            [0, np.sin(roll), np.cos(roll)]]) # Rotation around x
+        yaw, pitch, roll = 0, 0, -30 * np.pi / 180
+        r_yaw = np.array(
+            [[np.cos(yaw), -np.sin(yaw), 0], [np.sin(yaw), np.cos(yaw), 0], [0, 0, 1]]
+        )  # Rotation around z
+        r_pitch = np.array(
+            [
+                [np.cos(pitch), 0, np.sin(pitch)],
+                [0, 1, 0],
+                [-np.sin(pitch), 0, np.cos(pitch)],
+            ]
+        )  # Rotation around y
+        r_roll = np.array(
+            [
+                [1, 0, 0],
+                [0, np.cos(roll), -np.sin(roll)],
+                [0, np.sin(roll), np.cos(roll)],
+            ]
+        )  # Rotation around x
 
         R = np.matmul(r_yaw, np.matmul(r_pitch, r_roll))
 
@@ -234,8 +241,32 @@ if __name__ == "__main__":
         Point3d(-5, -5, 0),
     ]
     valid_line = omap3d.check_line(Point3d(0, 0, 0), Point3d(11, 21, 0), quad_corners)
+    # print(valid_line)
+    # omap3d.project((1,2,0))
+
+    # The Robosys Environment
+    origin = Point3d(
+        200, 100, 0
+    )  # Bottom Left corner of grid is 2 meters to the left (x) and 1m negative y
+    grid_width = 100  # 5 meters wide (x)
+    grid_depth = 60  # 3 meters tall (y)
+    grid_height = 20  # 2 meters tall (z)
+    robosys_grid = OccupanyGrid3d(
+        grid_width, grid_depth, grid_height, origin, cell_size=5
+    )
+    robosys_grid.add_rectangles(
+        Point3d(0, 20, 0), Point3d(60, 40, 60)
+    )  # Measurements in CM relative to origin
+    robosys_grid.add_rectangles(Point3d(-30, -60, 0), Point3d(0, -20, 90))
+    robosys_grid.add_rectangles(Point3d(0, -60, 40), Point3d(240, -20, 90))
+    robosys_grid.add_rectangles(Point3d(60, -60, 0), Point3d(240, -20, 90))
+    valid_line = robosys_grid.check_line(
+        Point3d(0, 0, 0),
+        Point3d(x=103.00174191628984, y=-91.5617546731021, z=2.259940872447486),
+        quad_corners,
+    )
     print(valid_line)
-    omap3d.project((1,2,0))
+
     # Some gut checks here:
     # print(omap.map)
     # omap.add_points_global([Point2d(10,10), Point2d(0,0) ])
