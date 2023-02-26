@@ -16,14 +16,11 @@ class CrazyflieRRT:
     def __init__(
         self,
         grid: OccupanyGrid3d,
-        init_state: Point3d = Point3d(0, 0, 0),
         step_size=5,
         goal_bias=0.25,
     ):
         # Store occupancy grid to reference dimensions of area, as well as checking for collisions!
         self.tree = nx.DiGraph()
-        self.initial_node = init_state
-        self.tree.add_node(self.initial_node, id=0)
         self.grid = grid
         self.step_size = step_size
         self.goal_bias = goal_bias
@@ -31,8 +28,10 @@ class CrazyflieRRT:
 
         self.rng = np.random.default_rng(10)
 
-    def generate(self, goal: Point3d, max_iter: int = 10, goal_diameter=5):
-        new_node = self.initial_node
+    def generate(self, start: Point3d, goal: Point3d, max_iter: int = 10, goal_diameter=5):
+        self.tree.add_node(start, id=0)
+        self.initial_node = start
+        new_node = start
         i = 0
         while (
             np.linalg.norm(np.array(goal) - np.array(new_node)) > goal_diameter
