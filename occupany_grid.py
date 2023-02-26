@@ -7,7 +7,7 @@ from typing import Sequence
 import numpy as np
 
 # Point2d = namedtuple("Point", "x y")
-Point3d = namedtuple("Point3", "x y z")
+Point3d = namedtuple("Point3d", "x y z")
 
 Pose2d = namedtuple("Pose2d", "x y h")
 

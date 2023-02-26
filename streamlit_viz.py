@@ -1,3 +1,4 @@
+from math import ceil
 import numpy as np
 import sys
 
@@ -11,23 +12,30 @@ import networkx as nx
 
 if __name__ == "__main__":
     st.set_page_config(layout="wide")
+    glbl_origin = Point3d(
+            90.8, 90.8, 0
+        )  # Bottom Left corner of grid is 35.75 inches in from corner (x) and y
+    init_state = Point3d(0, 0, 0) # Starting spot of the drone
+    cell_size = 5
+    grid_width = int(ceil(300.4 / cell_size))  # 118.25 inches meters wide (x)
+    grid_depth = int(ceil(211 / cell_size))  # 83 inches meters deep (y)
+    grid_height = int(ceil(200 / cell_size))  # 2 meters tall (z)
 
-    # The Robosys Environment
-    origin = Point3d(
-        200, 100, 0
-    )  # Bottom Left corner of grid is 2 meters to the left (x) and 1m negative y
-    grid_width = 100  # 5 meters wide (x)
-    grid_depth = 60  # 3 meters tall (y)
-    grid_height = 20  # 2 meters tall (z)
+    if grid_width % 2 == 1:
+        grid_width += 1
+    if grid_depth % 2 == 1:
+        grid_depth += 1
+    if grid_height % 2 == 1:
+        grid_height += 1
+
     robosys_grid = OccupanyGrid3d(
-        grid_width, grid_depth, grid_height, origin, cell_size=5
+        grid_width, grid_depth, grid_height, glbl_origin, cell_size=cell_size
     )
-    robosys_grid.add_rectangles(
-        Point3d(0, 20, 0), Point3d(60, 40, 60)
-    )  # Measurements in CM relative to origin
-    robosys_grid.add_rectangles(Point3d(-30, -60, 0), Point3d(0, -20, 90))
-    robosys_grid.add_rectangles(Point3d(0, -60, 40), Point3d(240, -20, 90))
-    robosys_grid.add_rectangles(Point3d(60, -60, 0), Point3d(240, -20, 90))
+
+    robosys_grid.add_rectangles(Point3d(0, 30, 0), Point3d(122, 60.5, 62.3))
+    robosys_grid.add_rectangles(Point3d(0, -60.5, 0), Point3d(122, -30, 62.3))
+    robosys_grid.add_rectangles(Point3d(0, -60.5, 62.3), Point3d(35, -35, 90))
+
 
     world = viz_world(robosys_grid)
 
@@ -35,7 +43,7 @@ if __name__ == "__main__":
 
     with st.form("sim_params"):
         step_size = st.slider("Step size (cm)", 1, 50, 10)
-        iterations = st.slider("Iterations", 10, 10000, 10000)
+        iterations = st.slider("Iterations", 10, 10000, 2000)
         plot_entire_rrt = st.checkbox("Plot entire RRT", False)
 
         goal_posn = [100.0, -90.0, 25.0]
@@ -55,11 +63,10 @@ if __name__ == "__main__":
 
         st.form_submit_button("Generate")
 
-    init_state = Point3d(20, 60, 10)
     rrt = CrazyflieRRT(robosys_grid, init_state, step_size=step_size, goal_bias=0.25)
     generated_path = rrt.generate(goal=goal_posn, max_iter=iterations)
     relaxed = rrt.relax_path(generated_path)
-
+    print(relaxed)
     # Plot Results
     world.add_point(
         goal_posn,
