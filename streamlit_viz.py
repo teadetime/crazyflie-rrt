@@ -7,16 +7,24 @@ from viz import build_robosys_world, viz_world
 from rrt import CrazyflieRRT
 
 import streamlit as st
-
 import networkx as nx
 
 if __name__ == "__main__":
+    default_goal_posn = [100.0, -80.0, 0.0]
+    default_step_size = 20
+
     st.set_page_config(layout="wide")
     viz = build_robosys_world()
-    starting_pos = Point3d(0,0,0) 
+    starting_pos = Point3d(0,0,0) # TODO: Make this a default, and add number boxes for defining startpoint in the form
+    viz.omap.add_floor_is_lava(starting_pos, Point3d(*default_goal_posn), box=20)
+    viz.add_omap_to_fig()
+
+    if "rrt" not in st.session_state:
+        st.session_state["rrt"] = CrazyflieRRT(viz.omap, starting_pos, step_size=default_step_size, goal_bias=0.25)
+
     with st.form("sim_params"):
         step_size = st.slider("Step size (cm)", 1, 50, 10)
-        iterations = st.slider("Iterations", 10, 10000, 2000)
+        iterations = st.slider("Iterations", 10, 10000, 100)
 
         goal_posn = [100.0, -80.0, 0.0]
         coord_name = ["X", "Y", "Z"]
@@ -30,21 +38,22 @@ if __name__ == "__main__":
                     float(goal_posn[i]),
                 )
         goal_posn = Point3d(*goal_posn)
-
         goal_bias = st.slider("Goal bias", 0.0, 1.0, 0.25)
 
-        st.form_submit_button("Generate")
+        generate_rrt = st.form_submit_button("Generate")
+
+        if generate_rrt:
+            with st.spinner("Generating path"):
+                generated_path = st.session_state["rrt"].generate(goal=goal_posn, max_iter=iterations)
+        else:
+            generated_path = []
 
     plot_entire_rrt = st.checkbox("Plot entire RRT", False)
 
-    # print(viz.fig.data)
-    viz.omap.add_floor_is_lava(starting_pos, goal_posn, box=20)
-    viz.add_omap_to_fig()
-    rrt = CrazyflieRRT(viz.omap, starting_pos, step_size=step_size, goal_bias=0.25)
-    generated_path = rrt.generate(goal=goal_posn, max_iter=iterations)
-    if generated_path != []:
-        
-        relaxed = rrt.relax_path(generated_path)
+    if generated_path == []:
+        st.write("Path not yet generated")
+    else:
+        relaxed = st.session_state["rrt"].relax_path(generated_path)
         print(relaxed)
         # Plot Results
         viz.add_point(
@@ -74,12 +83,12 @@ if __name__ == "__main__":
 
     if plot_entire_rrt:
         # Printing the entire graph
-        for node in rrt.tree.nodes:
+        for node in st.session_state["rrt"].tree.nodes:
             viz.add_point(
                 Point3d(*node),
                 marker=dict(size=2, symbol="circle", color="black", opacity=0.15),
             )  # , name=rrt.tree.nodes[node]["id"])
-        for edge in rrt.tree.edges:
+        for edge in st.session_state["rrt"].tree.edges:
             viz.plot_trajectory(
                 edge,
                 marker=dict(size=2, symbol="circle", color="black", opacity=0.2),
@@ -90,4 +99,5 @@ if __name__ == "__main__":
     viz.update_figure()
 
     st.title("RRT Viz")
-    st.plotly_chart(viz.fig)
+    viz.fig.update_layout(height=700)
+    st.plotly_chart(viz.fig, use_container_width=True)
