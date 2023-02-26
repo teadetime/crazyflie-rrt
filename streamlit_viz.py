@@ -1,4 +1,5 @@
 from math import ceil
+import pickle
 import numpy as np
 import sys
 
@@ -67,7 +68,10 @@ if __name__ == "__main__":
         st.write("Path not yet generated")
     else:
         relaxed = rrt.relax_path(generated_path)
-        print(relaxed)
+        
+        with open(f'path_x_{start_posn.x}_y_{start_posn.y}_y_{start_posn.z}_to_x_{goal_posn.x}_y_{goal_posn.y}_y_{goal_posn.z}.pkl', 'wb') as file:
+            pickle.dump(relaxed, file)
+
         # Plot Results
         viz.add_point(
             goal_posn,
