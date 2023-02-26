@@ -189,11 +189,11 @@ class OccupanyGrid3d:
         self.set_rectangles(Point3d(min[0],min[1], min[2]), Point3d(max[0]-1, max[1]-1, max[2]), True)
 
 
-        start_corner_low = Point3d(start_pt.x-10, start_pt.y-10, 0)
-        start_corner_high = Point3d(start_pt.x+10, start_pt.y+10, lava_depth)
+        start_corner_low = Point3d(start_pt.x-box, start_pt.y-box, 0)
+        start_corner_high = Point3d(start_pt.x+box, start_pt.y+box, lava_depth)
 
-        goal_corner_low = Point3d(goal_pt.x-10, goal_pt.y-10, 0)
-        goal_corner_high = Point3d(goal_pt.x+10, goal_pt.y+10, lava_depth)
+        goal_corner_low = Point3d(goal_pt.x-box, goal_pt.y-box, 0)
+        goal_corner_high = Point3d(goal_pt.x+box, goal_pt.y+box, lava_depth)
 
         self.set_rectangles(start_corner_low, start_corner_high, False)
         self.set_rectangles(goal_corner_low, goal_corner_high, False)

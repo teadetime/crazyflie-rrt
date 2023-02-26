@@ -27,7 +27,7 @@ class CrazyflieRRT:
         self.grid = grid
         self.step_size = step_size
         self.goal_bias = goal_bias
-        self.bbox = [(0, 0, 0), (8, 8, 0), (-8, 8, 0), (-8, -8, 0), (-8, -8, 0)]
+        self.bbox = [(0, 0, 0), (8, 8, 0), (-8, 8, -10), (-8, -8, -10), (-8, -8, -10)]
 
         self.rng = np.random.default_rng(10)
 

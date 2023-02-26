@@ -1,4 +1,5 @@
 from math import ceil
+import pickle
 import numpy as np
 import sys
 
@@ -13,7 +14,7 @@ import networkx as nx
 if __name__ == "__main__":
     st.set_page_config(layout="wide")
     viz = build_robosys_world()
-    starting_pos = Point3d(0,0,0) 
+    start_pos = Point3d(0,0,0) 
     with st.form("sim_params"):
         step_size = st.slider("Step size (cm)", 1, 50, 10)
         iterations = st.slider("Iterations", 10, 10000, 2000)
@@ -38,14 +39,17 @@ if __name__ == "__main__":
     plot_entire_rrt = st.checkbox("Plot entire RRT", False)
 
     # print(viz.fig.data)
-    viz.omap.add_floor_is_lava(starting_pos, goal_posn, box=20)
+    viz.omap.add_floor_is_lava(start_pos, goal_posn, box=20, lava_depth=25)
     viz.add_omap_to_fig()
-    rrt = CrazyflieRRT(viz.omap, starting_pos, step_size=step_size, goal_bias=0.25)
+    rrt = CrazyflieRRT(viz.omap, start_pos, step_size=step_size, goal_bias=0.25)
     generated_path = rrt.generate(goal=goal_posn, max_iter=iterations)
     if generated_path != []:
         
         relaxed = rrt.relax_path(generated_path)
-        print(relaxed)
+        
+        with open(f'path_x_{start_pos.x}_y_{start_pos.y}_y_{start_pos.z}_to_x_{goal_posn.x}_y_{goal_posn.y}_y_{goal_posn.z}.pkl', 'wb') as file:
+            pickle.dump(relaxed, file)
+
         # Plot Results
         viz.add_point(
             goal_posn,
