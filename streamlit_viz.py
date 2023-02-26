@@ -39,6 +39,8 @@ if __name__ == "__main__":
                     float(min_max[1][i]),
                     float(start_posn[i]),
                 )
+        for i, col in enumerate(st.columns(3)):
+            with col:
                 goal_posn[i] = st.number_input(
                     f"Goal: {coord_name[i]}",
                     float(min_max[0][i]),
@@ -57,7 +59,7 @@ if __name__ == "__main__":
                 viz = build_robosys_world()
                 viz.omap.add_floor_is_lava(start_posn, goal_posn, box=20)
                 viz.add_omap_to_fig()
-                rrt = CrazyflieRRT(viz.omap, step_size=default_step_size, goal_bias=0.25)
+                rrt = CrazyflieRRT(viz.omap, step_size=step_size, goal_bias=goal_bias)
                 generated_path = rrt.generate(start=start_posn, goal=goal_posn, max_iter=iterations)
         else:
             generated_path = []
