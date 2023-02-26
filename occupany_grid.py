@@ -181,12 +181,12 @@ class OccupanyGrid3d:
         for x in xs:
             for y in ys:
                 for z in zs:
-                    self.map[(x, y, z)] = True
+                    self.map[(x, y, z)] = value
 
     def add_floor_is_lava(self, start_pt: Point3d, goal_pt:Point3d, box:int=10, lava_depth:int=35 ) -> None:
         min, max = self.min_max
         max[2] = lava_depth
-        self.set_rectangles(Point3d(min[0],min[1], min[2]), Point3d(max[0], max[1], max[2]), True)
+        self.set_rectangles(Point3d(min[0],min[1], min[2]), Point3d(max[0]-1, max[1]-1, max[2]), True)
 
 
         start_corner_low = Point3d(start_pt.x-10, start_pt.y-10, 0)

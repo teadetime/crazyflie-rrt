@@ -17,9 +17,8 @@ if __name__ == "__main__":
     with st.form("sim_params"):
         step_size = st.slider("Step size (cm)", 1, 50, 10)
         iterations = st.slider("Iterations", 10, 10000, 2000)
-        plot_entire_rrt = st.checkbox("Plot entire RRT", False)
 
-        goal_posn = [100.0, -90.0, 25.0]
+        goal_posn = [100.0, -80.0, 0.0]
         coord_name = ["X", "Y", "Z"]
         min_max = viz.omap.min_max
         for i, col in enumerate(st.columns(3)):
@@ -36,38 +35,42 @@ if __name__ == "__main__":
 
         st.form_submit_button("Generate")
 
+    plot_entire_rrt = st.checkbox("Plot entire RRT", False)
+
     # print(viz.fig.data)
-    viz.omap.add_floor_is_lava(starting_pos, goal_posn)
+    viz.omap.add_floor_is_lava(starting_pos, goal_posn, box=20)
     viz.add_omap_to_fig()
     rrt = CrazyflieRRT(viz.omap, starting_pos, step_size=step_size, goal_bias=0.25)
     generated_path = rrt.generate(goal=goal_posn, max_iter=iterations)
-    relaxed = rrt.relax_path(generated_path)
-    print(relaxed)
-    # Plot Results
-    viz.add_point(
-        goal_posn,
-        marker=dict(size=4, symbol="x", color="red", opacity=0.6),
-        name="Goal",
-        show_legend=True,
-    )
-    viz.plot_trajectory(
-        generated_path,
-        marker=dict(size=3, symbol="circle", color="red", opacity=0.4),
-        line=dict(color="red", width=4),
-        text=[],
-        name="RRT Raw Trajectory",
-    )
-    viz.plot_trajectory(
-        relaxed,
-        marker=dict(
-            size=4,
-            symbol="circle",
-            color="blue",
-            opacity=0.7,
-        ),
-        line=dict(color="blue", width=7),
-        name="Relaxed Trajectory",
-    )
+    if generated_path != []:
+        
+        relaxed = rrt.relax_path(generated_path)
+        print(relaxed)
+        # Plot Results
+        viz.add_point(
+            goal_posn,
+            marker=dict(size=4, symbol="x", color="red", opacity=0.6),
+            name="Goal",
+            show_legend=True,
+        )
+        viz.plot_trajectory(
+            generated_path,
+            marker=dict(size=3, symbol="circle", color="red", opacity=0.4),
+            line=dict(color="red", width=4),
+            text=[],
+            name="RRT Raw Trajectory",
+        )
+        viz.plot_trajectory(
+            relaxed,
+            marker=dict(
+                size=4,
+                symbol="circle",
+                color="blue",
+                opacity=0.7,
+            ),
+            line=dict(color="blue", width=7),
+            name="Relaxed Trajectory",
+        )
 
     if plot_entire_rrt:
         # Printing the entire graph
