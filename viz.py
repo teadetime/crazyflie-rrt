@@ -169,9 +169,9 @@ def build_robosys_world() -> viz_world:
         grid_width, grid_depth, grid_height, glbl_origin, cell_size=cell_size
     )
 
-    robosys_grid.add_rectangles(Point3d(0, 30, 0), Point3d(122, 60.5, 62.3))
-    robosys_grid.add_rectangles(Point3d(0, -60.5, 0), Point3d(122, -30, 62.3))
-    robosys_grid.add_rectangles(Point3d(0, -60.5, 62.3), Point3d(35, -35, 90))
+    robosys_grid.set_rectangles(Point3d(0, 30, 0), Point3d(122, 60.5, 62.3))
+    robosys_grid.set_rectangles(Point3d(0, -60.5, 0), Point3d(122, -30, 62.3))
+    robosys_grid.set_rectangles(Point3d(0, -60.5, 62.3), Point3d(35, -35, 90))
 
     world = viz_world(robosys_grid)
     world.add_omap_to_fig()

@@ -163,7 +163,7 @@ class OccupanyGrid3d:
         # TODO: Matrix multiplication for rotation and transformation and then set points
         raise NotImplementedError
 
-    def add_rectangles(self, bottom_left_point: Point3d, top_right_point: Point3d):
+    def set_rectangles(self, bottom_left_point: Point3d, top_right_point: Point3d, value:bool=True):
         """Helper to add rows in our environment. Positioned on our gloabl coordinate"""
         # TODO: Refactor to use linspace to then use numpy indexing
         # self.map[(range(bottom_left_cell[0], top_right_cell[0] + 1), range(bottom_left_cell[1], top_right_cell[1] + 1), range(bottom_left_cell[2], top_right_cell[2] + 1))]
@@ -182,6 +182,21 @@ class OccupanyGrid3d:
             for y in ys:
                 for z in zs:
                     self.map[(x, y, z)] = True
+
+    def add_floor_is_lava(self, start_pt: Point3d, goal_pt:Point3d, box:int=10, lava_depth:int=35 ) -> None:
+        min, max = self.min_max
+        max[2] = lava_depth
+        self.set_rectangles(Point3d(min[0],min[1], min[2]), Point3d(max[0], max[1], max[2]), True)
+
+
+        start_corner_low = Point3d(start_pt.x-10, start_pt.y-10, 0)
+        start_corner_high = Point3d(start_pt.x+10, start_pt.y+10, lava_depth)
+
+        goal_corner_low = Point3d(goal_pt.x-10, goal_pt.y-10, 0)
+        goal_corner_high = Point3d(goal_pt.x+10, goal_pt.y+10, lava_depth)
+
+        self.set_rectangles(start_corner_low, start_corner_high, False)
+        self.set_rectangles(goal_corner_low, goal_corner_high, False)
 
     def check_line(
         self, start_pt: Point3d, end_pt: Point3d, bounding_box: list[Point3d]
