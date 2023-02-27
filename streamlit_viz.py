@@ -11,12 +11,12 @@ import streamlit as st
 import networkx as nx
 
 if __name__ == "__main__":
-    default_goal_posn = [100.0, -80.0, 0.0]
+    default_goal_posn = [150.0, -30.0, 0.0]
     default_step_size = 20
 
     st.set_page_config(layout="wide")
     starting_pos = Point3d(0,0,0) # TODO: Make this a default, and add number boxes for defining startpoint in the form
-    default_start_posn = [0, 0, 0]
+    default_start_posn = [-30, 75, 0]
 
     viz = build_robosys_world()
     viz.omap.add_floor_is_lava(Point3d(*default_start_posn), Point3d(*default_goal_posn), box=20)
