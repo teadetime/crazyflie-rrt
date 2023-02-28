@@ -75,10 +75,9 @@ Final plotly/html visualization from recorded Crazyflie flight
 
 #### Example Run Process
 First we run `streamlit_viz.py` and generate a path (shown in red). This path is pickled to disk.
-[IMAGE]()
+![Streamlit Viz](images/viz.gif)
 
 Then we run the crazyflie with `fly.py` (having specified the newly pickled object to be loaded)
-[FLIGHT IMAGE]()
 
 Then we validate the results using `results.py` which allows us to see the recorded state during our flight.
-[RESULTS IMAGE]()
+![Results Viz](images/results.gif)
