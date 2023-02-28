@@ -45,7 +45,7 @@ from cflib.utils.multiranger import Multiranger
 from occupany_grid import Point3d
 
 # URI to the Crazyflie to connect to
-uri = uri_helper.uri_from_env(default='radio://0/50/2M/E7E7E7E7E7')
+uri = uri_helper.uri_from_env(default='radio://0/90/2M/E7E7E7E7E7')
 
 global_log = []
 
@@ -123,7 +123,7 @@ def run_sequence(scf, sequence):
 
     for position in sequence:
         print('Setting position {}'.format(position))
-        for i in range(100):
+        for i in range(30):
             cf.commander.send_position_setpoint(position[0],
                                                 position[1],
                                                 position[2],
@@ -141,19 +141,23 @@ def run_sequence(scf, sequence):
 if __name__ == '__main__':
     cflib.crtp.init_drivers()
 
-    with open('path_x_-30.0_y_70.0_y_0.0_to_x_150.0_y_0.0_y_0.0.pkl', 'rb') as file:
+    fp = 'path_x_50.0_y_0.0_y_0.0_to_x_50.0_y_-70.0_y_40.0'
+    with open(fp+".pkl", 'rb') as file:
         relaxed_path = pickle.load(file)
 
-    with open(f'track_desired.pkl', 'wb') as file:
+    with open(f'track_desired'+ fp +'.pkl', 'wb') as file:
         pickle.dump(relaxed_path, file)
     sequence = [(pt.x/100, pt.y/100, pt.z/100, 0) for pt in relaxed_path]
-    sequence.pop(0)
+    first_point = sequence.pop(0)
+    back = list(reversed(sequence))
+    back.append((first_point[0], first_point[1], 0.3, first_point[3]))
 
+    sequence.extend(back)
     with SyncCrazyflie(uri, cf=Crazyflie(rw_cache='./cache')) as scf:
         reset_estimator(scf)
         start_position_printing(scf)
         run_sequence(scf, sequence)
 
-        with open(f'track_actual.pkl', 'wb') as file:
+        with open(f'track_actual' + fp + '.pkl', 'wb') as file:
             pickle.dump(global_log, file)
         

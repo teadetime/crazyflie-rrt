@@ -24,7 +24,7 @@ class CrazyflieRRT:
         self.grid = grid
         self.step_size = step_size
         self.goal_bias = goal_bias
-        self.bbox = [(0, 0, 0), (8, 8, 0), (-8, 8, -20), (-8, -8, -20), (-8, -8, -20)]
+        self.bbox = [(0, 0, 0), (8, 8, 0), (-8, 8, -0), (-8, -8, -0), (-8, -8, -0)]
 
         self.rng = np.random.default_rng(10)
 
@@ -78,13 +78,7 @@ class CrazyflieRRT:
             clear = self.grid.check_line(
                 closest_node,
                 new_node,
-                bounding_box=[
-                    (0, 0, 0),
-                    (8, 8, 0),
-                    (-8, 8, 0),
-                    (-8, -8, 0),
-                    (-8, -8, 0),
-                ],
+                bounding_box=self.bbox,
             )
             if not clear:
                 continue
