@@ -40,27 +40,12 @@ from cflib.crazyflie.log import LogConfig
 from cflib.crazyflie.syncCrazyflie import SyncCrazyflie
 from cflib.crazyflie.syncLogger import SyncLogger
 from cflib.utils import uri_helper
+from cflib.utils.multiranger import Multiranger
 
 from occupany_grid import Point3d
 
 # URI to the Crazyflie to connect to
-uri = uri_helper.uri_from_env(default='radio://0/70/2M/E7E7E7E7E7')
-
-# Change the sequence according to your setup
-#             x    y    z  YAW
-# sequence = [
-#     (0.0, 0.0, 0.5, 0),
-#     (0.0, 0.0, 1.4, 0),
-#     #(0.0, 0.0, 1.2, 0),
-#     #(0.5, -0.5, 1.2, 0),
-#     #(0.5, 0.5, 1.2, 0),
-#     #(-0.5, 0.5, 1.2, 0),
-#     # (-0.5, -0.5, 1.2, 0),
-#     # (0.0, 0.0, 1.2, 0),
-#     (1.2, 0.0, 1.8, 0),
-#     (0.0, 0.0, 1.0, 0),
-#     (0.0, 0.0, 0.4, 0),
-# ]
+uri = uri_helper.uri_from_env(default='radio://0/50/2M/E7E7E7E7E7')
 
 global_log = []
 
@@ -138,11 +123,13 @@ def run_sequence(scf, sequence):
 
     for position in sequence:
         print('Setting position {}'.format(position))
-        for i in range(50):
+        for i in range(100):
             cf.commander.send_position_setpoint(position[0],
                                                 position[1],
                                                 position[2],
                                                 position[3])
+            # with Multiranger(scf) as multiranger:
+            #     print(f'Multi Ranger:\n F: {multiranger.front}\n B: {multiranger.back}\n L: {multiranger.left}\n R: {multiranger.right}\n)')
             time.sleep(0.1)
 
     cf.commander.send_stop_setpoint()
@@ -154,7 +141,7 @@ def run_sequence(scf, sequence):
 if __name__ == '__main__':
     cflib.crtp.init_drivers()
 
-    with open('path_x_0_y_0_y_0_to_x_100.0_y_-80.0_y_0.0.pkl', 'rb') as file:
+    with open('path_x_-30.0_y_70.0_y_0.0_to_x_150.0_y_0.0_y_0.0.pkl', 'rb') as file:
         relaxed_path = pickle.load(file)
 
     with open(f'track_desired.pkl', 'wb') as file:
@@ -166,7 +153,7 @@ if __name__ == '__main__':
         reset_estimator(scf)
         start_position_printing(scf)
         run_sequence(scf, sequence)
-    with open(f'track_actual.pkl', 'wb') as file:
-        pickle.dump(global_log, file)
-    # with open(f'track_desired.pkl', 'wb') as file:
-    #     pickle.dump(sequence, file )
+
+        with open(f'track_actual.pkl', 'wb') as file:
+            pickle.dump(global_log, file)
+        
